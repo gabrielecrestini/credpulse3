@@ -1,7 +1,7 @@
 // app/(admin)/admin/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import ApproveMissionButton from "@/app/components/ApproveMissionButton";
-import MarkAsPaidButton from "@/app/components/MarkAsPaidButton"; // Il nuovo bottone
+import MarkAsPaidButton from "@/app/components/MarkAsPaidButton"; // Il bottone manuale
 
 // Funzione helper
 const formatCreds = (creds: number | null | undefined = 0) => {
@@ -12,19 +12,21 @@ export default async function AdminPage() {
   const supabase = createClient();
 
   // 1. Carica missioni da approvare (Status: started)
+  // Qui il join restituisce profiles come array
   const { data: missionsToReview, error: missionError } = await supabase
     .from("user_missions")
     .select(`
       id,
       status,
       started_at,
-      profiles ( email ),
+      profiles ( email ), 
       missions ( title )
     `)
     .eq("status", "started")
     .order("started_at", { ascending: true });
 
   // 2. Carica i prelievi da PAGARE MANUALMENTE (Status: pending)
+  // Anche qui profiles è un array
   const { data: payoutsToPay, error: payoutError } = await supabase
     .from("payout_requests")
     .select(`
@@ -34,9 +36,9 @@ export default async function AdminPage() {
       rwc_amount,
       usd_amount,
       paypal_email,
-      profiles ( email )
+      profiles ( email ) 
     `)
-    .eq("status", "pending") // Mostra SOLO quelli in attesa di pagamento manuale
+    .eq("status", "pending") 
     .order("requested_at", { ascending: true });
 
   // Gestione errori caricamento
@@ -66,7 +68,8 @@ export default async function AdminPage() {
               {missionsToReview && missionsToReview.length > 0 ? (
                 missionsToReview.map((item) => (
                   <tr key={`mission-${item.id}`} className="border-b border-gray-700 hover:bg-white/5">
-                    <td className="p-4 text-gray-300">{item.profiles?.email ?? 'N/A'}</td>
+                    {/* CORREZIONE QUI */}
+                    <td className="p-4 text-gray-300">{item.profiles?.[0]?.email ?? 'N/A'}</td> 
                     <td className="p-4 text-white font-semibold">{item.missions?.title ?? 'N/A'}</td>
                     <td className="p-4 text-gray-400">
                       {new Date(item.started_at).toLocaleString("it-IT")}
@@ -113,7 +116,8 @@ export default async function AdminPage() {
               {payoutsToPay && payoutsToPay.length > 0 ? (
                 payoutsToPay.map((item) => (
                   <tr key={`payout-${item.id}`} className="border-b border-gray-700 hover:bg-white/5">
-                    <td className="p-4 text-gray-300">{item.profiles?.email ?? 'N/A'}</td>
+                    {/* CORREZIONE QUI */}
+                    <td className="p-4 text-gray-300">{item.profiles?.[0]?.email ?? 'N/A'}</td> 
                     <td className="p-4 text-white font-semibold">{item.paypal_email}</td>
                     <td className="p-4 text-secondary font-bold">
                       ${item.usd_amount} <span className="text-xs text-gray-400">({formatCreds(item.rwc_amount)} Creds)</span>
@@ -122,16 +126,14 @@ export default async function AdminPage() {
                       {new Date(item.requested_at).toLocaleString("it-IT")}
                     </td>
                     <td className="p-4 text-right space-y-1">
-                      {/* Link diretto a PayPal per comodità */}
                       <a 
                          href={`https://www.paypal.com/myaccount/transfer/send`} 
                          target="_blank" 
-                         rel="noopener noreferrer" // Aggiunto per sicurezza
+                         rel="noopener noreferrer"
                          className="text-primary hover:text-white underline text-sm block"
                       >
                          Invia su PayPal (Manuale)
                       </a>
-                      {/* Bottone per confermare l'avvenuto pagamento */}
                       <MarkAsPaidButton payoutRequestId={item.id} />
                     </td>
                   </tr>
