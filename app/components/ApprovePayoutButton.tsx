@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 
 export default function ApprovePayoutButton({ payoutRequestId }: { payoutRequestId: number }) {
   const [loading, setLoading] = useState(false);
