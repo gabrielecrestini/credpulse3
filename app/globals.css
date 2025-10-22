@@ -1,26 +1,30 @@
-@import "tailwindcss";
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply font-sans bg-background-main; /* Font di base (Rubik) e sfondo */
+    
+    /* La nostra texture "premium" */
+    background-image: radial-gradient(circle at 25% 25%, rgba(0, 191, 255, 0.1), transparent 30%),
+                      radial-gradient(circle at 75% 75%, rgba(255, 0, 255, 0.1), transparent 30%),
+                      url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDQwNDA0Ij48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMGIiPjwvcmVjdD4KPC9zdmc+');
+    background-size: auto, auto, 5px 5px;
+    background-position: center center;
+    
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* --- QUESTA È LA PARTE CORRETTA --- */
+  /* Applica il font Inter a tutti i titoli */
+  h1, h2, h3, h4, h5, h6 {
+    /* Invece di @apply font-heading, usiamo la funzione theme() */
+    font-family: theme('fontFamily.heading'); 
+    
+    /* Manteniamo @apply per le altre utility, che funzionano */
+    @apply uppercase tracking-tight;
+  }
 }
