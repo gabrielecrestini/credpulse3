@@ -83,8 +83,9 @@ export default function LandingPage() {
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white">
             COMPLETA MISSIONI. GUADAGNA CREDS.
           </h1>
+          {/* CORREZIONE ESLINT */}
           <p className="text-lg text-gray-300 mt-4 mb-8">
-            CredPulse è la piattaforma che ti premia in "Creds" per provare nuovi conti crypto e fintech. Accumula Creds e prelevali in crypto o PayPal.
+            CredPulse è la piattaforma che ti premia in &quot;Creds&quot; per provare nuovi conti crypto e fintech. Accumula Creds e prelevali in crypto o PayPal.
           </p>
           <button
             onClick={() => handleOpenAuth('register')}
@@ -183,9 +184,10 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <UserPlus className="w-8 h-8" />
               </div>
+               {/* CORREZIONE ESLINT (se dava errore qui) */}
               <h3 className="text-xl font-semibold text-white mb-2">1. SCEGLI UNA MISSIONE</h3>
               <p className="text-gray-400">
-                Registrati e scegli un'offerta che ti interessa dalla nostra lista.
+                Registrati e scegli un&apos;offerta che ti interessa dalla nostra lista. 
               </p> 
             </div>
             {/* Step 2 */}
@@ -204,8 +206,9 @@ export default function LandingPage() {
                 <Wallet className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">3. GUADAGNA CREDS</h3>
+              {/* CORREZIONE ESLINT */}
               <p className="text-gray-400">
-                Ricevi i tuoi "Creds" nel wallet e prelevali in crypto o PayPal.
+                Ricevi i tuoi &quot;Creds&quot; nel wallet e prelevali in crypto o PayPal.
               </p>
             </div>
           </div>

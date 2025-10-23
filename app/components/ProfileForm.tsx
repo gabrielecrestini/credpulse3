@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Loader2, KeyRound } from "lucide-react"; // Importa la nuova icona
+import { Loader2, KeyRound } from "lucide-react"; 
 
 // Tipi per i dati del profilo
 type Profile = {
@@ -63,9 +63,8 @@ export default function ProfileForm({
     setResetMessage({ type: "", content: "" });
 
     const { error } = await supabase.auth.resetPasswordForEmail(
-      userEmail, // Email dell'utente loggato
+      userEmail, 
       {
-        // Link alla pagina che abbiamo appena creato
         redirectTo: `${window.location.origin}/auth/update-password`,
       }
     );
@@ -80,7 +79,6 @@ export default function ProfileForm({
 
 
   return (
-    // Wrapper per contenere entrambe le card
     <div className="max-w-2xl">
       {/* 1. Card Modulo Profilo */}
       <form 
@@ -105,7 +103,8 @@ export default function ProfileForm({
             type="email" id="email" value={userEmail} disabled
             className="w-full px-4 py-3 bg-background-main border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed"
           />
-          <p className="text-xs text-gray-500 mt-1">L'email di login non può essere modificata.</p>
+          {/* CORREZIONE ESLINT */}
+          <p className="text-xs text-gray-500 mt-1">L&apos;email di login non può essere modificata.</p>
         </div>
 
         {/* Username */}

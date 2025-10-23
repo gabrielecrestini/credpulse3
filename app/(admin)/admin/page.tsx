@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server"; 
 import ApproveMissionButton from "@/app/components/ApproveMissionButton";
 import MarkAsPaidButton from "@/app/components/MarkAsPaidButton"; 
-// RIMOSSO: import ExportToCSVButton from "@/app/components/ExportToCSVButton"; 
+import ExportToCSVButton from "@/app/components/ExportToCSVButton"; // Assicurati che questo esista se lo usi
 
 // Funzione helper
 const formatCreds = (creds: number | null | undefined = 0) => {
@@ -51,11 +51,12 @@ export default async function AdminPage() {
         <h1 className="text-3xl font-heading font-bold text-white mb-8">
           ADMIN: PRELIEVI DA PAGARE MANUALMENTE ({payoutsToPay?.length ?? 0})
         </h1>
+        {/* CORREZIONE ESLINT */}
         <p className="text-gray-400 mb-4 -mt-6 text-sm">
-          Questa lista mostra le richieste in attesa. Invia i soldi tramite PayPal, poi clicca "Segna come Pagato".
+          Questa lista mostra le richieste in attesa. Invia i soldi tramite PayPal, poi clicca &quot;Segna come Pagato&quot;.
         </p>
         
-        {/* RIMOSSO: Bottone ExportToCSVButton */}
+        {/* Assicurati che ExportToCSVButton esista se decommenti */}
         {/* <div className="mb-4 flex justify-end"><ExportToCSVButton data={payoutsToPay || []} /></div> */}
 
         <div className="bg-background-secondary/80 backdrop-blur-md border border-secondary/50 rounded-2xl shadow-lg overflow-x-auto">
