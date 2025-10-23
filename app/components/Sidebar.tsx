@@ -1,16 +1,16 @@
 // app/components/Sidebar.tsx
-"use client";
+"use client"; // << FONDAMENTALE: Assicurati che ci sia!
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client"; // Usa il client LATO CLIENT
 import {
   LayoutDashboard,
   Target,
   Wallet,
   User,
   LogOut,
-  Shield, // Icona per Admin
+  Shield, 
 } from "lucide-react";
 
 // Definiamo i link
@@ -22,25 +22,37 @@ const navItems = [
   { name: "Admin", href: "/admin", icon: Shield, admin: true }, // Link Admin
 ];
 
-// Nuove props
 interface SidebarProps {
-  isOpen: boolean;
-  isAdmin: boolean;
+  isOpen: boolean; 
+  isAdmin: boolean; 
 }
 
 export default function Sidebar({ isOpen, isAdmin }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const supabase = createClient();
+  const router = useRouter(); 
+  const supabase = createClient(); 
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    console.log("Tentativo di logout..."); // Log per debug
+    try {
+      const { error } = await supabase.auth.signOut(); // Chiamata di logout
+      
+      if (error) {
+        console.error("Errore durante il logout:", error.message);
+        alert(`Errore durante il logout: ${error.message}`); // Mostra errore all'utente
+      } else {
+        console.log("Logout riuscito, reindirizzamento...");
+        router.push("/"); // Reindirizza alla home page
+        router.refresh(); // Pulisce la cache e aggiorna lo stato
+      }
+    } catch (err) {
+      console.error("Errore imprevisto durante il logout:", err);
+      alert("Si è verificato un errore imprevisto durante il logout.");
+    }
   };
 
   return (
-    // Classi per la responsività
+    // Classi per la responsività e transizione
     <div
       className={`
         fixed top-0 left-0 z-40 h-screen w-64 bg-background-secondary/90 backdrop-blur-lg border-r border-white/10 p-6 flex flex-col
@@ -61,7 +73,6 @@ export default function Sidebar({ isOpen, isAdmin }: SidebarProps) {
           // Nascondi link admin se l'utente non è admin
           if (item.admin && !isAdmin) return null;
 
-          // Usa startsWith per mantenere il link attivo anche nelle sotto-pagine
           const isActive = pathname.startsWith(item.href); 
           return (
             <Link
@@ -85,7 +96,7 @@ export default function Sidebar({ isOpen, isAdmin }: SidebarProps) {
       {/* Bottone Logout */}
       <div>
         <button
-          onClick={handleLogout}
+          onClick={handleLogout} // Assicurati che onClick chiami la funzione
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-secondary/10 hover:text-white w-full transition-colors"
         >
           <LogOut className="w-5 h-5" />
