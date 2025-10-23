@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/auth/callback/route": "/auth/callback",
+  "/favicon.ico/route": "/favicon.ico",
+  "/auth/update-password/page": "/auth/update-password",
+  "/page": "/",
+  "/privacy/page": "/privacy",
+  "/terms/page": "/terms",
+  "/(dashboard)/dashboard/page": "/dashboard",
+  "/(admin)/admin/page": "/admin",
+  "/(dashboard)/missions/page": "/missions",
+  "/(dashboard)/profile/page": "/profile",
+  "/(dashboard)/wallet/page": "/wallet"
+}
