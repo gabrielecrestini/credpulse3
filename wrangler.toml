@@ -1,0 +1,9 @@
+name = "credpulse"
+pages_build_output_dir = ".next" # Indica a Wrangler dove sono i file statici
+
+[build]
+command = "npm run build" # Comando di build standard
+# Non specifichiamo la pulizia qui, ci affidiamo al .gitignore
+
+# Dice a Pages di ignorare la cartella cache durante l'upload
+ignore = ["node_modules", ".next/cache/**"]
