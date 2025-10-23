@@ -1,3 +1,4 @@
+// app/components/PayoutForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -5,14 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
 
-// Tasso di conversione
-const CREDS_TO_USD_RATE = 0.001; // 1000 Creds = $1
-const MIN_PAYOUT_CREDS = 5000; // Minimo 5000 Creds ($5)
+const CREDS_TO_USD_RATE = 0.001;
+const MIN_PAYOUT_CREDS = 5000; 
 
 export default function PayoutForm({ 
   userId, 
   userPayPalEmail, 
-  currentBalance 
+  currentBalance // Questo ora serve solo per la UI, non per la logica
 }: { 
   userId: string;
   userPayPalEmail: string | null;
@@ -33,65 +33,42 @@ export default function PayoutForm({
     setLoading(true);
     setMessage({ type: "", content: "" });
 
-    // Validazione
+    // Validazione base lato client (la vera validazione è nel backend)
     if (credsToWithdraw < MIN_PAYOUT_CREDS) {
       setMessage({ type: "error", content: `L'importo minimo per il prelievo è ${MIN_PAYOUT_CREDS} Creds.` });
       setLoading(false);
       return;
     }
-    if (credsToWithdraw > currentBalance) {
-      setMessage({ type: "error", content: "Saldo insufficiente." });
-      setLoading(false);
-      return;
-    }
-    if (!paypalEmail) {
+     if (!paypalEmail) {
       setMessage({ type: "error", content: "Per favore, inserisci la tua email PayPal." });
       setLoading(false);
       return;
     }
 
-    // 1. Inserisci la richiesta di prelievo
-    const { error: requestError } = await supabase
-      .from("payout_requests")
-      .insert({
-        user_id: userId,
-        rwc_amount: credsToWithdraw,
-        usd_amount: parseFloat(usdValue),
-        method: "paypal",
-        paypal_email: paypalEmail,
-        status: "pending", // L'admin dovrà approvarla
-      });
+    // --- NUOVA LOGICA: Chiama la funzione RPC ---
+    const { data, error } = await supabase.rpc('request_payout', {
+      p_user_id: userId,
+      p_creds_amount: credsToWithdraw,
+      p_paypal_email: paypalEmail
+    });
+    // ------------------------------------------
 
-    if (requestError) {
-      setMessage({ type: "error", content: `Errore: ${requestError.message}` });
+    if (error || (data && !data.success)) {
+      // Mostra l'errore restituito dalla funzione RPC (es. "Saldo insufficiente")
+      const errorMessage = error?.message || data?.message || "Errore sconosciuto durante la richiesta.";
+      setMessage({ type: "error", content: errorMessage });
       setLoading(false);
-      return;
-    }
-
-    // 2. Sottrai i creds dal bilancio dell'utente
-    const newBalance = currentBalance - credsToWithdraw;
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({ 
-        rwc_balance: newBalance,
-        paypal_email: paypalEmail // Salva l'email PayPal per usi futuri
-      })
-      .eq("id", userId);
-
-    if (profileError) {
-      // Qui dovremmo gestire un rollback, ma per ora notifichiamo solo
-      setMessage({ type: "error", content: `Errore nell'aggiornare il saldo: ${profileError.message}` });
+    } else {
+      // Successo! La funzione RPC ha già fatto tutto.
       setLoading(false);
-      return;
+      setMessage({ type: "success", content: data.message || "Richiesta inviata!" });
+      setCredsToWithdraw(MIN_PAYOUT_CREDS); // Resetta il form
+      // Forza un refresh dei dati della pagina per mostrare il saldo aggiornato e la nuova richiesta
+      router.refresh(); 
     }
-
-    // Successo
-    setLoading(false);
-    setMessage({ type: "success", content: "Richiesta di prelievo inviata con successo! Sarà processata entro 48 ore." });
-    setCredsToWithdraw(MIN_PAYOUT_CREDS);
-    router.refresh(); // Aggiorna la pagina per mostrare il nuovo saldo e la richiesta
   };
 
+  // ... (il resto del JSX del form rimane identico) ...
   return (
     <form 
       onSubmit={handlePayoutRequest}
@@ -113,14 +90,15 @@ export default function PayoutForm({
       {/* Importo Creds */}
       <div className="mb-4">
         <label htmlFor="creds" className="block text-sm font-medium text-gray-300 mb-1">
-          Creds da Prelevare (Min. {MIN_PAYOUT_CREDS})
+          Creds da Prelevare (Min. {formatCreds(MIN_PAYOUT_CREDS)}) {/* Usa formatCreds per il minimo */}
         </label>
         <input
           type="number"
           id="creds"
           value={credsToWithdraw}
           onChange={(e) => setCredsToWithdraw(Math.max(0, parseInt(e.target.value) || 0))}
-          step={100}
+          step={100} // Utile per incrementi
+          min={MIN_PAYOUT_CREDS} // Attributo HTML per validazione base
           className="w-full px-4 py-3 bg-background-main border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
         <p className="text-sm text-primary mt-1">
@@ -147,7 +125,7 @@ export default function PayoutForm({
       {/* Bottone */}
       <button
         type="submit"
-        disabled={loading || currentBalance < MIN_PAYOUT_CREDS}
+        disabled={loading || currentBalance < MIN_PAYOUT_CREDS} // Disabilita se il saldo UI è basso
         className="w-full bg-primary text-background-main font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center
                    disabled:bg-gray-600 disabled:cursor-not-allowed
                    hover:enabled:bg-opacity-90"
@@ -161,9 +139,10 @@ export default function PayoutForm({
           </>
         )}
       </button>
-      {currentBalance < MIN_PAYOUT_CREDS && (
+      {/* Mostra il messaggio di saldo insufficiente anche in base al saldo UI */}
+      {currentBalance < MIN_PAYOUT_CREDS && !loading && (
         <p className="text-center text-sm text-red-400 mt-2">
-          Devi avere almeno {MIN_PAYOUT_CREDS} Creds per prelevare.
+          Devi avere almeno {formatCreds(MIN_PAYOUT_CREDS)} Creds per prelevare.
         </p>
       )}
     </form>
