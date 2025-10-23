@@ -1,9 +1,10 @@
+// lib/supabase/server.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { cookies as nextCookies } from 'next/headers'
 
-// Non prendiamo argomenti, chiamiamo cookies() all'interno.
-export function createClient() {
-  const cookieStore = cookies()
+// La funzione ora è async a causa di await nextCookies()
+export async function createClient() {
+  const cookieStore = await nextCookies() // Necessario await in Next.js 15+
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,19 +16,16 @@ export function createClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            // Qui Next.js si lamenta se chiamato in modo sincrono. 
-            // Ma nei Server Component che abbiamo, questo è l'approccio standard.
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // Il try/catch è una misura per ignorare l'errore 
-            // in Server Component che non dovrebbero settare cookies.
+            // Ignora errore nei Server Components read-only
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options })
           } catch (error) {
-            // Ignora errore.
+            // Ignora errore
           }
         },
       },

@@ -1,30 +1,28 @@
+// app/auth/callback/route.ts
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server' // Rimosso import cookies
+import { createClient } from '@/lib/supabase/server' // Importa la versione async
 
 export async function GET(request: Request) {
-  // Prende l'URL da cui l'utente proviene
   const { searchParams, origin } = new URL(request.url)
-  
-  // Prende il "code" che Google ci ha inviato
   const code = searchParams.get('code')
-  
-  // (Opzionale) 'next' è dove l'utente voleva andare prima del login
+  // Ottieni 'next' dall'URL o usa '/dashboard' come default
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
-    // const cookieStore = cookies() // RIMOSSO
-    const supabase = createClient() // CORRETTO
-    
+    const supabase = await createClient(); // CORRETTO: await
     // Scambia il codice per una sessione
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
     if (!error) {
-      // Login riuscito! Reindirizza alla dashboard
+      // Reindirizza all'URL 'next' (o dashboard)
       return NextResponse.redirect(`${origin}${next}`)
     }
+     // Logga l'errore se lo scambio fallisce
+    console.error('Errore durante exchangeCodeForSession:', error.message);
+  } else {
+    console.error('Codice mancante nel callback di autenticazione');
   }
 
-  // Se c'è un errore o non c'è il codice, rimanda alla home
-  console.error('Errore durante il callback di autenticazione');
-  return NextResponse.redirect(`${origin}/`)
+  // Se c'è un errore o manca il codice, reindirizza alla pagina di errore auth
+  // o semplicemente alla home per semplicità
+  return NextResponse.redirect(`${origin}/`) 
 }

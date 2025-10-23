@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react"; // Assicurati che X sia importato
 
 export default function ApprovePayoutButton({ payoutRequestId }: { payoutRequestId: number }) {
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function ApprovePayoutButton({ payoutRequestId }: { payoutRequest
     if (!confirm("Sei sicuro di voler approvare questa richiesta? Verrà inviata all'automazione PayPal.")) {
       return;
     }
-    
+
     setLoading(true);
     setResult(null);
 
@@ -32,20 +32,21 @@ export default function ApprovePayoutButton({ payoutRequestId }: { payoutRequest
     } else {
       setResult("success");
       // Dopo l'approvazione, la riga non è più 'pending' e scompare dalla lista
-      router.refresh(); 
+      router.refresh();
     }
-    
+
     setLoading(false);
   };
-  
-  // ... (Logica di rendering success/error) ...
+
 
   if (result === "success") {
-    return <Check className="w-5 h-5 text-green-400" title="Approvato (In attesa di PayPal)" />;
+    // CORREZIONE: Rimosso title="..."
+    return <Check className="w-5 h-5 text-green-400" />;
   }
-  
+
   if (result === "error") {
-    return <X className="w-5 h-5 text-red-400" title="Errore" />;
+    // CORREZIONE: Rimosso title="..."
+    return <X className="w-5 h-5 text-red-400" />;
   }
 
   return (

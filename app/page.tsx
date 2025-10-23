@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState, MouseEvent } from "react"; // Importa MouseEvent
+import { useState, MouseEvent } from "react"; 
 import Image from "next/image";
 import {
   CreditCard,
@@ -11,20 +11,20 @@ import {
   Wallet,
   Wifi,
 } from "lucide-react";
-import { motion } from "framer-motion"; // Importa Framer Motion
+import { motion, Variants } from "framer-motion"; // Importa Variants
 
 // Importa i nostri componenti premium
 import AuthModal from "@/app/components/AuthModal";
 import Header from "@/app/components/Header";
 import GlassCard from "@/app/components/GlassCard";
 
-// Definiamo una variante per l'animazione di scroll
-const sectionVariants = {
+// Definiamo una variante per l'animazione di scroll (CORRETTA)
+const sectionVariants: Variants = { 
   hidden: { opacity: 0, y: 50 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
+    transition: { duration: 0.6, ease: "easeInOut" } // Corretto
   },
 };
 
@@ -50,15 +50,13 @@ export default function LandingPage() {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Calcola la rotazione (valore da -10 a 10 gradi)
-    const rotateY = (mouseX / width - 0.5) * -20; // Inverte per un effetto naturale
+    const rotateY = (mouseX / width - 0.5) * -20; 
     const rotateX = (mouseY / height - 0.5) * 20;
 
     setRotation({ rotateX, rotateY });
   };
 
   const handleMouseLeave = () => {
-    // Resetta la rotazione
     setRotation({ rotateX: 0, rotateY: 0 });
   };
 
@@ -71,10 +69,9 @@ export default function LandingPage() {
       {/* 2. SEZIONE EROE (Con 3D Tilt) */}
       <main 
         className="relative container mx-auto px-4 pt-32 md:pt-40 pb-16 md:pb-32 flex flex-col md:flex-row items-center"
-        // Applichiamo i listener per il mouse qui
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        style={{ perspective: "1000px" }} // Attiva la prospettiva 3D
+        style={{ perspective: "1000px" }} 
       >
         {/* Effetti Luce */}
         <div className="absolute -top-20 left-0 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
@@ -102,7 +99,6 @@ export default function LandingPage() {
         <div className="md:w-1/2 mt-16 md:mt-0 z-10 flex justify-center">
           <motion.div
             className="relative w-[320px] h-[200px] md:w-[400px] md:h-[252px] animate-[float_6s_ease-in-out_infinite] rounded-xl overflow-hidden shadow-2xl"
-            // Applica la rotazione 3D e una transizione fluida
             style={{
               transform: `rotateX(${rotation.rotateX}deg) rotateY(${rotation.rotateY}deg)`,
               transition: "transform 0.1s ease-out",
@@ -115,11 +111,6 @@ export default function LandingPage() {
               className="object-cover"
               priority={true}
             />
-            {/*
-              Overlay CORRETTO:
-              Padding orizzontale aumentato a px-8 e md:px-12 per
-              spingere il testo lontano dai bordi trasparenti del PNG.
-            */}
             <div className="absolute inset-0 py-5 px-8 md:py-6 md:px-12 flex flex-col justify-between text-white">
               <span className="text-xl md:text-2xl font-heading font-bold text-white">
                 Cred<span className="text-primary">Pulse</span>
@@ -143,8 +134,8 @@ export default function LandingPage() {
         className="py-16 md:py-20 bg-background-secondary/50"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }} // L'animazione parte quando il 30% è visibile
-        variants={sectionVariants}
+        viewport={{ once: true, amount: 0.3 }} 
+        variants={sectionVariants} // Usa le varianti corrette
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12">
@@ -180,7 +171,7 @@ export default function LandingPage() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
-        variants={sectionVariants}
+        variants={sectionVariants} // Usa le varianti corrette
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12">
@@ -216,7 +207,6 @@ export default function LandingPage() {
               <p className="text-gray-400">
                 Ricevi i tuoi "Creds" nel wallet e prelevali in crypto o PayPal.
               </p>
-              {/* ^^^ CORREZIONE QUI: </Vp> è diventato </p> */}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server"; // Rimosso import cookies
+// app/(dashboard)/dashboard/page.tsx
+import { createClient } from "@/lib/supabase/server"; 
 import { CreditCard, Send } from "lucide-react";
 import Link from "next/link";
 
@@ -11,19 +12,23 @@ const formatCreds = (creds: number) => {
 const CREDS_TO_USD_RATE = 0.001; // 1000 Creds = $1
 
 export default async function DashboardPage() {
-  // const cookieStore = cookies(); // RIMOSSO
-  const supabase = createClient(); // CORRETTO
+  const supabase = await createClient(); // CORRETTO: await
 
   // Prendiamo l'ID utente
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Se user è null (improbabile con il layout, ma per sicurezza)
+  if (!user) {
+     return <div>Utente non trovato. Effettua il login.</div>; 
+  }
+
   // Prendiamo il profilo utente dal DB per il saldo
   const { data: profile } = await supabase
     .from("profiles")
     .select("email, rwc_balance")
-    .eq("id", user!.id)
+    .eq("id", user.id) // Usiamo user.id che ora sappiamo non essere null
     .single();
 
   const balance = profile?.rwc_balance ?? 0;
@@ -40,8 +45,9 @@ export default async function DashboardPage() {
 
       {/* Sezione Wallet */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card Bilancio */}
-        <div className="md:col-span-2 bg-gradient-to-r from-primary/80 to-secondary/80 p-6 rounded-2xl shadow-2xl text-white">
+        
+        {/* Card Bilancio (Aggiunto hover) */}
+        <div className="md:col-span-2 bg-gradient-to-r from-primary/80 to-secondary/80 p-6 rounded-2xl shadow-2xl text-white transition-transform duration-300 hover:scale-[1.02]">
           <h2 className="text-sm font-sans uppercase opacity-80 mb-2">
             Bilancio Totale
           </h2>
@@ -74,8 +80,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Card Tasso di Conversione (Bonus) */}
-        <div className="bg-background-secondary/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col justify-center items-center">
+        {/* Card Tasso di Conversione (Aggiunto hover) */}
+        <div className="bg-background-secondary/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col justify-center items-center transition-all duration-300 hover:scale-[1.02] hover:border-primary/50">
           <h3 className="text-lg font-semibold text-gray-300 mb-2">
             Tasso di Conversione
           </h3>
@@ -95,12 +101,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Placeholder per le Missioni Future */}
+      {/* Placeholder per le Missioni Future (Aggiunto hover) */}
       <div className="mt-10">
         <h2 className="text-2xl font-heading font-bold text-white mb-4">
           Le tue Missioni Attive
         </h2>
-        <div className="bg-background-secondary/80 backdrop-blur-md border border-white/10 p-10 rounded-2xl text-center">
+        <div className="bg-background-secondary/80 backdrop-blur-md border border-white/10 p-10 rounded-2xl text-center transition-all duration-300 hover:border-primary/50">
           <p className="text-gray-400">
             Non hai missioni attive.
           </p>
