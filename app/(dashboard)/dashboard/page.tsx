@@ -1,10 +1,10 @@
 // app/(dashboard)/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server"; 
-import { CreditCard, Send, TrendingUp, Activity, ExternalLink, ArrowDownLeft, ArrowUpRight } from "lucide-react"; 
+import { CreditCard, Send, TrendingUp, Activity, ExternalLink, ArrowDownLeft, ArrowUpRight, Star } from "lucide-react"; 
 import Link from "next/link";
+import Image from "next/image"; // Importa Image per i loghi
 
 const formatCreds = (creds: number) => { 
-  // Gestisce numeri positivi e negativi
   const num = creds ?? 0;
   const formatted = new Intl.NumberFormat("it-IT").format(num);
   return num > 0 ? `+${formatted}` : formatted; 
@@ -23,14 +23,9 @@ const getGreeting = () => {
   return "Buonasera";
 };
 
-// Nuovo tipo per le transazioni
-type Transaction = {
-  id: number;
-  type: 'reward' | 'payout';
-  amount: number;
-  description: string;
-  created_at: string;
-};
+type Transaction = { id: number; type: 'reward' | 'payout'; amount: number; description: string; created_at: string; };
+// Tipo per le Missioni in Evidenza
+type FeaturedMission = { id: number; title: string; rwc_reward: number; partner_logo_url: string; };
 
 export default async function DashboardPage() {
   const supabase = await createClient(); 
@@ -45,8 +40,15 @@ export default async function DashboardPage() {
     .from("transactions")
     .select("id, type, amount, description, created_at")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false }) // Ordina per data, la più recente prima
+    .order("created_at", { ascending: false }) 
     .limit(5); // Limita alle ultime 5
+
+  // Query 3: NUOVO - Missioni in Evidenza
+  const { data: featuredMissions, error: missionsError } = await supabase
+    .from("missions")
+    .select("id, title, rwc_reward, partner_logo_url")
+    .eq("is_active", true)
+    .limit(3); // Prendi le prime 3 missioni attive
 
   const balance = profile?.rwc_balance ?? 0;
   const balanceInUSD = (balance * CREDS_TO_USD_RATE).toFixed(2);
@@ -60,6 +62,7 @@ export default async function DashboardPage() {
         {greeting}, <span className="capitalize">{welcomeName}</span>!
       </h1>
 
+      {/* Sezione Principale: Saldo e Azioni (Identica) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">       
         <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/50 via-background-secondary to-purple-900/50 border border-white/10 p-6 rounded-2xl shadow-xl relative overflow-hidden transition-transform duration-300 hover:scale-[1.01]">
            <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/20 rounded-full filter blur-3xl opacity-50 animate-pulse-slow -z-10"></div>
@@ -85,30 +88,52 @@ export default async function DashboardPage() {
            </div>
         </div>
       </div>
+
+      {/* --- NUOVA SEZIONE: MISSIONI IN EVIDENZA --- */}
+      <div className="mt-8 md:mt-10">
+        <h2 className="text-xl sm:text-2xl font-heading font-bold text-white mb-4 flex items-center gap-2">
+          <Star className="w-6 h-6 text-yellow-400"/> Missioni in Evidenza
+        </h2>
+        {missionsError && <p className="text-red-400 text-sm">Errore nel caricare le missioni in evidenza.</p>}
+        {featuredMissions && featuredMissions.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredMissions.map((mission: FeaturedMission) => (
+              <Link href="/missions" key={mission.id} className="block bg-background-secondary/80 backdrop-blur-md border border-white/10 rounded-2xl p-5 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:border-primary/50">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 p-2 flex items-center justify-center">
+                    <Image src={mission.partner_logo_url || '/images/hero-card.png'} alt="logo" width={32} height={32} className="object-contain" />
+                  </div>
+                  <p className="font-semibold text-white flex-1">{mission.title}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-primary">+{formatCredsBalance(mission.rwc_reward)} Creds</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          !missionsError && <p className="text-gray-400 text-sm">Nessuna missione in evidenza al momento.</p>
+        )}
+      </div>
+      {/* --- FINE NUOVA SEZIONE --- */}
+
+
+      {/* Sezione Ultime Attività (Dati Reali) */}
       <div className="mt-8 md:mt-10"> 
         <h2 className="text-xl sm:text-2xl font-heading font-bold text-white mb-4 flex items-center gap-2"><Activity className="w-6 h-6 text-primary"/> Ultime Attività</h2>
         <div className="bg-background-secondary/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-lg space-y-1">
           {txError && <p className="text-red-400 text-sm">Errore nel caricare le attività.</p>}
-          
-          {/* Mappa sui dati REALI */}
           {transactions && transactions.length > 0 ? transactions.map((tx: Transaction) => {
             const isReward = tx.type === 'reward';
             return (
               <div key={tx.id} className="flex justify-between items-center text-sm border-b border-gray-700/50 p-3 last:border-b-0 hover:bg-white/5 rounded-lg transition-colors">
                 <div className="flex items-center gap-3">
-                  {/* Icona Crypto Style */}
                   <div className={`p-1.5 rounded-full ${isReward ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                    {isReward ? (
-                      <ArrowDownLeft className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <ArrowUpRight className="w-4 h-4 text-red-400" />
-                    )}
+                    {isReward ? ( <ArrowDownLeft className="w-4 h-4 text-green-400" /> ) : ( <ArrowUpRight className="w-4 h-4 text-red-400" /> )}
                   </div>
                   <div>
                     <p className="font-semibold text-white">{tx.description || (isReward ? 'Ricompensa accreditata' : 'Prelievo')}</p>
-                    <p className="text-gray-400 text-xs">
-                      {new Date(tx.created_at).toLocaleString("it-IT", { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    <p className="text-gray-400 text-xs">{new Date(tx.created_at).toLocaleString("it-IT", { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                 </div>
                 <p className={`font-semibold text-base ${isReward ? 'text-green-400' : 'text-red-400'}`}>
@@ -116,9 +141,7 @@ export default async function DashboardPage() {
                 </p>
               </div>
             );
-          }) : ( 
-             !txError && <p className="text-gray-400 text-center py-4">Nessuna attività recente da mostrare.</p> 
-          )}
+          }) : ( !txError && <p className="text-gray-400 text-center py-4">Nessuna attività recente da mostrare.</p> )}
         </div>
       </div>
     </div>
