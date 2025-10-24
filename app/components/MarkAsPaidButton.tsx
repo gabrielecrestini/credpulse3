@@ -4,59 +4,61 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react"; // Solo Check e Loader2 sono usati qui
+import { Check, Loader2, AlertTriangle } from "lucide-react"; 
 
 export default function MarkAsPaidButton({ payoutRequestId }: { payoutRequestId: number }) {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<"success" | "error" | null>(null);
+  const [requestState, setRequestState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const supabase = createClient();
   const router = useRouter();
 
   const handleComplete = async () => {
-    // Doppia conferma per sicurezza
     if (!confirm("CONFERMI di aver GIA' inviato i soldi manualmente tramite PayPal? L'operazione NON è reversibile.")) {
       return;
     }
+    setLoading(true); 
+    setRequestState('loading');
+    setErrorMessage('');
 
-    setLoading(true);
-
-    // Aggiorna lo stato a "completed"
     const { error } = await supabase
       .from('payout_requests')
       .update({
         status: 'completed',
         processed_at: new Date().toISOString(),
-        transaction_id: 'MANUAL_PAYPAL_COMPLETION' // Traccia manuale
+        transaction_id: 'MANUAL_PAYPAL_COMPLETION'
       })
       .eq('id', payoutRequestId)
-      .eq('status', 'pending'); // Sicurezza extra: aggiorna solo se è ancora 'pending'
+      .eq('status', 'pending'); 
 
     if (error) {
-      setResult("error");
+      setRequestState('error');
+      setErrorMessage(error.message);
       console.error("Errore nel segnare come pagato:", error.message);
-      alert(`Errore: ${error.message}`);
     } else {
-      setResult("success");
-      router.refresh(); // Rimuove la riga dalla lista "Da Pagare"
+      setRequestState('success');
+      setTimeout(() => { router.refresh(); }, 1500); 
     }
-
-    setLoading(false);
+    setLoading(false); 
   };
 
-  if (result === "success") {
-    // CORREZIONE: Rimosso title="..."
-    return <Check className="w-6 h-6 text-green-400" />;
+  if (requestState === 'success') {
+    return <div className="flex items-center justify-end gap-1 text-green-400 text-sm"><Check className="w-5 h-5" /> Completato</div>;
+  }
+  if (requestState === 'error') {
+     return <div className="flex items-center justify-end gap-1 text-red-400 text-sm" title={errorMessage}><AlertTriangle className="w-5 h-5" /> Errore</div>;
   }
 
   return (
     <button
       onClick={handleComplete}
-      disabled={loading}
-      className="bg-secondary text-white font-bold px-4 py-2 rounded-lg hover:bg-secondary/80 transition-all disabled:bg-gray-600 text-sm"
-      // Puoi usare l'attributo title HTML sul bottone se vuoi il tooltip
+      disabled={loading} 
+      className="bg-secondary text-white font-bold px-4 py-2 rounded-lg hover:bg-secondary/80 transition-all disabled:bg-gray-600 disabled:opacity-70 text-sm flex items-center justify-center gap-2"
       title="Clicca SOLO dopo aver inviato i soldi su PayPal"
     >
-      {loading ? <Loader2 className="animate-spin w-4 h-4" /> : "Segna come Pagato"}
+      {requestState === 'loading' ? (
+           <><Loader2 className="animate-spin w-4 h-4" /> Attendere...</>
+       ) : ( "Segna come Pagato" )}
     </button>
   );
 }
