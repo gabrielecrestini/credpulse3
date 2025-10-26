@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState, MouseEvent } from "react"; 
+import { useState, MouseEvent } from "react"; // MouseEvent è importato (anche se non più usato per il 3D tilt, tenerlo non causa problemi)
 import Image from "next/image";
 import {
   CreditCard,
@@ -11,22 +11,59 @@ import {
   Wallet,
   Wifi,
 } from "lucide-react";
-import { motion, Variants } from "framer-motion"; // Importa Variants
+import { motion, Variants } from "framer-motion"; // Importa motion e Variants
 
-// Importa i nostri componenti premium
+// Importa i nostri componenti
 import AuthModal from "@/app/components/AuthModal";
 import Header from "@/app/components/Header";
 import GlassCard from "@/app/components/GlassCard";
 
-// Definiamo una variante per l'animazione di scroll (CORRETTA)
-const sectionVariants: Variants = { 
-  hidden: { opacity: 0, y: 50 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.6, ease: "easeInOut" } // Corretto
+// --- VARIANTI DI ANIMAZIONE CORRETTE ---
+
+// 1. Variante per l'apparizione della Sezione Eroe (Fade in + slide)
+const fadeInLeft: Variants = {
+  hidden: { x: -50, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    // CORREZIONE: Sostituito l'array invalido con una stringa valida
+    transition: { duration: 0.8, ease: "circOut" }, 
   },
 };
+
+const fadeInRight: Variants = {
+  hidden: { x: 50, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    // CORREZIONE: Sostituito l'array invalido con una stringa valida
+    transition: { duration: 0.8, ease: "circOut" },
+  },
+};
+
+// 2. Variante per il contenitore (per animazioni "stagger")
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15, // Ritardo tra ogni elemento figlio
+      delayChildren: 0.2,
+    },
+  },
+};
+
+// 3. Variante per le card (che appaiono da sotto)
+const cardFadeInUp: Variants = {
+  hidden: { y: 40, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
+// --- FINE VARIANTI ---
+
 
 // Pagina Principale
 export default function LandingPage() {
@@ -35,55 +72,36 @@ export default function LandingPage() {
     tab: 'register' as 'login' | 'register'
   });
 
-  // Stato per l'effetto 3D Tilt
-  const [rotation, setRotation] = useState({ rotateX: 0, rotateY: 0 });
-
   const handleOpenAuth = (tab: 'login' | 'register') => {
     setModalState({ isOpen: true, tab: tab });
   };
 
-  // Logica per il 3D Tilt
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const rotateY = (mouseX / width - 0.5) * -20; 
-    const rotateX = (mouseY / height - 0.5) * 20;
-
-    setRotation({ rotateX, rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setRotation({ rotateX: 0, rotateY: 0 });
-  };
-
+  // Logica 'onMouseMove' e 'onMouseLeave' per il 3D tilt è stata rimossa per alleggerire
 
   return (
     <div className="min-h-screen overflow-x-hidden">
       
       <Header onOpenAuth={handleOpenAuth} />
 
-      {/* 2. SEZIONE EROE (Con 3D Tilt) */}
+      {/* 2. SEZIONE EROE (Animazioni Left/Right) */}
       <main 
         className="relative container mx-auto px-4 pt-32 md:pt-40 pb-16 md:pb-32 flex flex-col md:flex-row items-center"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ perspective: "1000px" }} 
+        // Listener e style per il 3D tilt rimossi
       >
-        {/* Effetti Luce */}
+        {/* Effetti Luce (Invariati) */}
         <div className="absolute -top-20 left-0 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-secondary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow animation-delay-4000 -z-10"></div>
 
-
-        {/* Testo a sinistra */}
-        <div className="md:w-1/2 z-10 text-center md:text-left">
+        {/* Testo a sinistra (Animato) */}
+        <motion.div 
+          className="md:w-1/2 z-10 text-center md:text-left"
+          variants={fadeInLeft}
+          initial="hidden"
+          animate="visible" // Avvia l'animazione al caricamento
+        >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white">
             COMPLETA MISSIONI. GUADAGNA CREDS.
           </h1>
-          {/* CORREZIONE ESLINT */}
           <p className="text-lg text-gray-300 mt-4 mb-8">
             CredPulse è la piattaforma che ti premia in &quot;Creds&quot; per provare nuovi conti crypto e fintech. Accumula Creds e prelevali in crypto o PayPal.
           </p>
@@ -94,21 +112,23 @@ export default function LandingPage() {
             <div className="absolute top-0 left-0 w-20 h-full bg-white/30 transform -skew-x-[15deg] translate-x-[-150px] group-hover:translate-x-[300px] transition-transform duration-700 opacity-50"></div>
             Inizia a Guadagnare
           </button>
-        </div>
+        </motion.div>
 
-        {/* Immagine della Carta (Con 3D Tilt e Padding corretto) */}
-        <div className="md:w-1/2 mt-16 md:mt-0 z-10 flex justify-center">
-          <motion.div
-            className="relative w-[320px] h-[200px] md:w-[400px] md:h-[252px] animate-[float_6s_ease-in-out_infinite] rounded-xl overflow-hidden shadow-2xl"
-            style={{
-              transform: `rotateX(${rotation.rotateX}deg) rotateY(${rotation.rotateY}deg)`,
-              transition: "transform 0.1s ease-out",
-            }}
+        {/* Immagine della Carta a destra (Animata) */}
+        <motion.div 
+          className="md:w-1/2 mt-16 md:mt-0 z-10 flex justify-center"
+          variants={fadeInRight}
+          initial="hidden"
+          animate="visible" // Avvia l'animazione al caricamento
+        >
+          <div 
+            className="relative w-[320px] h-[200px] md:w-[400px] md:h-[252px] animate-[float_6s_ease-in-out_infinite] rounded-xl overflow-hidden shadow-2xl
+                       transition-transform duration-300 hover:scale-105" // Aggiunto hover CSS semplice
           >
             <Image
               src="/images/hero-card.png"
               alt="CredPulse Card"
-              fill
+              fill 
               className="object-cover"
               priority={true}
             />
@@ -125,18 +145,18 @@ export default function LandingPage() {
                 </h3>
               </div>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </main>
 
-      {/* 3. SEZIONE CATEGORIE (Con Animazione Scroll) */}
+      {/* 3. SEZIONE CATEGORIE (Animazione Stagger a scorrimento) */}
       <motion.section 
         id="categorie" 
         className="py-16 md:py-20 bg-background-secondary/50"
+        variants={staggerContainer} 
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }} 
-        variants={sectionVariants} // Usa le varianti corrette
+        whileInView="visible" // Si attiva scorrendo
+        viewport={{ once: true, amount: 0.2 }} // Si attiva una volta, al 20% di visibilità
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12">
@@ -144,18 +164,21 @@ export default function LandingPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             <GlassCard
+              variants={cardFadeInUp} // Animazione singola card
               icon={<DatabaseZap className="w-6 h-6" />}
               title="Conti Crypto & Exchange"
               description="Apri conti sui migliori exchange, ottieni bonus di benvenuto e impara a gestire i tuoi asset digitali."
               comingSoon={true}
             />
             <GlassCard
+              variants={cardFadeInUp} // Animazione singola card
               icon={<CreditCard className="w-6 h-6" />}
               title="Carte Personali & Business"
               description="Richiedi carte innovative per le tue spese quotidiane o per far crescere il tuo business. Ricompense istantanee."
               comingSoon={true}
             />
             <GlassCard
+              variants={cardFadeInUp} // Animazione singola card
               icon={<Wifi className="w-6 h-6" />}
               title="SIM Digitali (eSIM)"
               description="Rimani connesso in tutto il mondo con le eSIM. Attiva un piano e ricevi un cashback."
@@ -165,33 +188,32 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      {/* 4. SEZIONE COME FUNZIONA (Con Animazione Scroll) */}
+      {/* 4. SEZIONE COME FUNZIONA (Animazione Stagger a scorrimento) */}
       <motion.section 
         id="come-funziona" 
         className="py-16 md:py-20"
+        variants={staggerContainer} 
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={sectionVariants} // Usa le varianti corrette
+        whileInView="visible" // Si attiva scorrendo
+        viewport={{ once: true, amount: 0.2 }}
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12">
             Il Tuo Loop di Guadagno
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center group">
+            {/* Step 1 (Animato) */}
+            <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <UserPlus className="w-8 h-8" />
               </div>
-               {/* CORREZIONE ESLINT (se dava errore qui) */}
               <h3 className="text-xl font-semibold text-white mb-2">1. SCEGLI UNA MISSIONE</h3>
               <p className="text-gray-400">
-                Registrati e scegli un&apos;offerta che ti interessa dalla nostra lista. 
+                Registrati e scegli un&apos;offerta che ti interessa dalla nostra lista.
               </p> 
-            </div>
-            {/* Step 2 */}
-            <div className="flex flex-col items-center group">
+            </motion.div>
+            {/* Step 2 (Animato) */}
+            <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <CheckSquare className="w-8 h-8" />
               </div>
@@ -199,23 +221,22 @@ export default function LandingPage() {
               <p className="text-gray-400">
                 Segui le istruzioni: apri il conto, effettua un deposito, o prova il servizio.
               </p>
-            </div>
-            {/* Step 3 */}
-            <div className="flex flex-col items-center group">
+            </motion.div>
+            {/* Step 3 (Animato) */}
+            <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <Wallet className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">3. GUADAGNA CREDS</h3>
-              {/* CORREZIONE ESLINT */}
               <p className="text-gray-400">
                 Ricevi i tuoi &quot;Creds&quot; nel wallet e prelevali in crypto o PayPal.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </motion.section>
 
-      {/* 5. MODAL DI AUTENTICAZIONE */}
+      {/* 5. MODAL DI AUTENTICAZIONE (Invariato) */}
       <AuthModal 
         isOpen={modalState.isOpen} 
         onClose={() => setModalState({ ...modalState, isOpen: false })}
