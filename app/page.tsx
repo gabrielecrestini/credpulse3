@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState, MouseEvent } from "react"; // MouseEvent è importato (anche se non più usato per il 3D tilt, tenerlo non causa problemi)
+import { useState, MouseEvent } from "react"; // MouseEvent è necessario per il faretto
 import Image from "next/image";
 import {
   CreditCard,
@@ -11,58 +11,31 @@ import {
   Wallet,
   Wifi,
 } from "lucide-react";
-import { motion, Variants } from "framer-motion"; // Importa motion e Variants
+import { motion, Variants } from "framer-motion";
 
 // Importa i nostri componenti
 import AuthModal from "@/app/components/AuthModal";
 import Header from "@/app/components/Header";
 import GlassCard from "@/app/components/GlassCard";
 
-// --- VARIANTI DI ANIMAZIONE CORRETTE ---
-
-// 1. Variante per l'apparizione della Sezione Eroe (Fade in + slide)
+// --- Varianti Animazione (Invariate) ---
 const fadeInLeft: Variants = {
   hidden: { x: -50, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    // CORREZIONE: Sostituito l'array invalido con una stringa valida
-    transition: { duration: 0.8, ease: "circOut" }, 
-  },
+  visible: { x: 0, opacity: 1, transition: { duration: 0.8, ease: "circOut" } },
 };
-
 const fadeInRight: Variants = {
   hidden: { x: 50, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    // CORREZIONE: Sostituito l'array invalido con una stringa valida
-    transition: { duration: 0.8, ease: "circOut" },
-  },
+  visible: { x: 0, opacity: 1, transition: { duration: 0.8, ease: "circOut" } },
 };
-
-// 2. Variante per il contenitore (per animazioni "stagger")
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15, // Ritardo tra ogni elemento figlio
-      delayChildren: 0.2,
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
 };
-
-// 3. Variante per le card (che appaiono da sotto)
 const cardFadeInUp: Variants = {
   hidden: { y: 40, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { duration: 0.6, ease: "easeOut" },
-  },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
 };
-// --- FINE VARIANTI ---
+// --- Fine Varianti ---
 
 
 // Pagina Principale
@@ -76,17 +49,28 @@ export default function LandingPage() {
     setModalState({ isOpen: true, tab: tab });
   };
 
-  // Logica 'onMouseMove' e 'onMouseLeave' per il 3D tilt è stata rimossa per alleggerire
+  // --- NUOVA FUNZIONE: GESTIONE SPOTLIGHT ---
+  // Questa funzione aggiorna le variabili CSS --mouse-x e --mouse-y
+  // È molto leggera e non causa re-render di React
+  const handlePageMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    // e.currentTarget è il div 'spotlight-effect'
+    // Aggiorniamo le sue proprietà CSS in tempo reale
+    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY}px`);
+  };
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    // AGGIUNTO: Classe 'spotlight-effect' e handler onMouseMove
+    <div 
+      className="min-h-screen overflow-x-hidden spotlight-effect"
+      onMouseMove={handlePageMouseMove}
+    >
       
       <Header onOpenAuth={handleOpenAuth} />
 
-      {/* 2. SEZIONE EROE (Animazioni Left/Right) */}
+      {/* 2. SEZIONE EROE (Invariata) */}
       <main 
         className="relative container mx-auto px-4 pt-32 md:pt-40 pb-16 md:pb-32 flex flex-col md:flex-row items-center"
-        // Listener e style per il 3D tilt rimossi
       >
         {/* Effetti Luce (Invariati) */}
         <div className="absolute -top-20 left-0 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
@@ -97,7 +81,7 @@ export default function LandingPage() {
           className="md:w-1/2 z-10 text-center md:text-left"
           variants={fadeInLeft}
           initial="hidden"
-          animate="visible" // Avvia l'animazione al caricamento
+          animate="visible" 
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white">
             COMPLETA MISSIONI. GUADAGNA CREDS.
@@ -119,11 +103,11 @@ export default function LandingPage() {
           className="md:w-1/2 mt-16 md:mt-0 z-10 flex justify-center"
           variants={fadeInRight}
           initial="hidden"
-          animate="visible" // Avvia l'animazione al caricamento
+          animate="visible" 
         >
           <div 
             className="relative w-[320px] h-[200px] md:w-[400px] md:h-[252px] animate-[float_6s_ease-in-out_infinite] rounded-xl overflow-hidden shadow-2xl
-                       transition-transform duration-300 hover:scale-105" // Aggiunto hover CSS semplice
+                       transition-transform duration-300 hover:scale-105" 
           >
             <Image
               src="/images/hero-card.png"
@@ -155,8 +139,8 @@ export default function LandingPage() {
         className="py-16 md:py-20 bg-background-secondary/50"
         variants={staggerContainer} 
         initial="hidden"
-        whileInView="visible" // Si attiva scorrendo
-        viewport={{ once: true, amount: 0.2 }} // Si attiva una volta, al 20% di visibilità
+        whileInView="visible" 
+        viewport={{ once: true, amount: 0.2 }} 
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12">
@@ -164,21 +148,21 @@ export default function LandingPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             <GlassCard
-              variants={cardFadeInUp} // Animazione singola card
+              variants={cardFadeInUp} 
               icon={<DatabaseZap className="w-6 h-6" />}
               title="Conti Crypto & Exchange"
               description="Apri conti sui migliori exchange, ottieni bonus di benvenuto e impara a gestire i tuoi asset digitali."
               comingSoon={true}
             />
             <GlassCard
-              variants={cardFadeInUp} // Animazione singola card
+              variants={cardFadeInUp} 
               icon={<CreditCard className="w-6 h-6" />}
               title="Carte Personali & Business"
               description="Richiedi carte innovative per le tue spese quotidiane o per far crescere il tuo business. Ricompense istantanee."
               comingSoon={true}
             />
             <GlassCard
-              variants={cardFadeInUp} // Animazione singola card
+              variants={cardFadeInUp} 
               icon={<Wifi className="w-6 h-6" />}
               title="SIM Digitali (eSIM)"
               description="Rimani connesso in tutto il mondo con le eSIM. Attiva un piano e ricevi un cashback."
@@ -194,7 +178,7 @@ export default function LandingPage() {
         className="py-16 md:py-20"
         variants={staggerContainer} 
         initial="hidden"
-        whileInView="visible" // Si attiva scorrendo
+        whileInView="visible" 
         viewport={{ once: true, amount: 0.2 }}
       >
         <div className="container mx-auto px-4 text-center">
@@ -202,7 +186,6 @@ export default function LandingPage() {
             Il Tuo Loop di Guadagno
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            {/* Step 1 (Animato) */}
             <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <UserPlus className="w-8 h-8" />
@@ -212,7 +195,6 @@ export default function LandingPage() {
                 Registrati e scegli un&apos;offerta che ti interessa dalla nostra lista.
               </p> 
             </motion.div>
-            {/* Step 2 (Animato) */}
             <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <CheckSquare className="w-8 h-8" />
@@ -222,7 +204,6 @@ export default function LandingPage() {
                 Segui le istruzioni: apri il conto, effettua un deposito, o prova il servizio.
               </p>
             </motion.div>
-            {/* Step 3 (Animato) */}
             <motion.div variants={cardFadeInUp} className="flex flex-col items-center group">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary/30 transition-transform duration-300 group-hover:scale-110">
                 <Wallet className="w-8 h-8" />

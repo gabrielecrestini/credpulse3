@@ -28,10 +28,44 @@
     @apply uppercase tracking-tight;
   }
 }
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+/* --- Stile Neon Spotlight Magico --- */
+/* Applica l'effetto al wrapper principale della pagina */
+.spotlight-effect {
+  position: relative; /* Necessario per il posizionamento del faretto */
+  overflow: hidden; /* Assicura che il faretto non sbordi */
 }
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
+
+/* Creiamo un faretto usando un pseudo-elemento ::before.
+  Sarà un gradiente radiale posizionato sulle variabili CSS --mouse-x e --mouse-y
+  che imposteremo con JavaScript.
+*/
+.spotlight-effect::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Sta sotto il contenuto */
+
+  background: radial-gradient(
+    circle 350px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 191, 255, 0.15), /* Blu Neon Primario */
+    rgba(255, 0, 255, 0.1),  /* Magenta Neon Secondario */
+    transparent 60%
+  );
+  
+  opacity: 0; /* Nascosto di default */
+  transition: opacity 0.4s ease-out; /* Transizione fluida */
+}
+
+/* Quando il mouse entra nella pagina, il faretto appare */
+.spotlight-effect:hover::before {
+  opacity: 1;
+}
+
+/* Assicura che tutto il contenuto della pagina stia SOPRA il faretto */
+.spotlight-effect > * {
+  position: relative;
+  z-index: 1;
 }
