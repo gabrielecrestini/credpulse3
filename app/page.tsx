@@ -37,6 +37,8 @@ const cardFadeInUp: Variants = {
 };
 // --- Fine Varianti ---
 
+
+// Pagina Principale
 export default function LandingPage() {
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -47,6 +49,7 @@ export default function LandingPage() {
     setModalState({ isOpen: true, tab: tab });
   };
 
+  // Funzione per lo spotlight
   const handlePageMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     e.currentTarget.style.setProperty('--mouse-x', `${e.clientX}px`);
     e.currentTarget.style.setProperty('--mouse-y', `${e.clientY}px`);
@@ -56,7 +59,8 @@ export default function LandingPage() {
     // --- CORREZIONE: Usiamo un Fragment <> per separare il Modal dalla pagina ---
     <>
       <div 
-        className="min-h-screen spotlight-effect" // Rimosso overflow-x-hidden
+        // --- CORREZIONE: Rimosso 'overflow-x-hidden' ---
+        className="min-h-screen spotlight-effect" 
         onMouseMove={handlePageMouseMove}
       >
         
@@ -66,10 +70,10 @@ export default function LandingPage() {
         <main 
           className="relative container mx-auto px-4 pt-32 md:pt-40 pb-16 md:pb-32 flex flex-col md:flex-row items-center"
         >
-          {/* ... (Contenuto Hero Section identico) ... */}
           {/* Effetti Luce */}
           <div className="absolute -top-20 left-0 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
           <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-secondary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow animation-delay-4000 -z-10"></div>
+
           {/* Testo a sinistra (Animato) */}
           <motion.div 
             className="md:w-1/2 z-10 text-center md:text-left"
@@ -88,6 +92,7 @@ export default function LandingPage() {
               Inizia a Guadagnare
             </button>
           </motion.div>
+
           {/* Immagine della Carta a destra (Animata) */}
           <motion.div 
             className="md:w-1/2 mt-16 md:mt-0 z-10 flex justify-center"
@@ -137,7 +142,7 @@ export default function LandingPage() {
       </div> 
       {/* --- FINE div 'spotlight-effect' --- */}
 
-      {/* 5. MODAL DI AUTENTICAZIONE (Ora è fuori dal div principale) */}
+      {/* 5. MODAL DI AUTENTICAZIONE (SPOSTATO FUORI dal div 'spotlight-effect') */}
       <AuthModal 
         isOpen={modalState.isOpen} 
         onClose={() => setModalState({ ...modalState, isOpen: false })}
