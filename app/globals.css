@@ -5,9 +5,9 @@
 
 @layer base {
   body {
-    @apply font-sans bg-background-main; /* Font di base (Rubik) e sfondo */
+    @apply font-sans bg-background-main text-gray-200; 
     
-    /* La nostra texture "premium" */
+    /* Textura "premium" */
     background-image: radial-gradient(circle at 25% 25%, rgba(0, 191, 255, 0.1), transparent 30%),
                       radial-gradient(circle at 75% 75%, rgba(255, 0, 255, 0.1), transparent 30%),
                       url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDQwNDA0Ij48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMGIiPjwvcmVjdD4KPC9zdmc+');
@@ -18,27 +18,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* --- QUESTA È LA PARTE CORRETTA --- */
   /* Applica il font Inter a tutti i titoli */
   h1, h2, h3, h4, h5, h6 {
-    /* Invece di @apply font-heading, usiamo la funzione theme() */
     font-family: theme('fontFamily.heading'); 
-    
-    /* Manteniamo @apply per le altre utility, che funzionano */
     @apply uppercase tracking-tight;
   }
 }
-/* --- Stile Neon Spotlight Magico --- */
-/* Applica l'effetto al wrapper principale della pagina */
+
+/* --- Stile Neon Spotlight Magico (CORRETTO) --- */
 .spotlight-effect {
-  position: relative; /* Necessario per il posizionamento del faretto */
-  overflow: hidden; /* Assicura che il faretto non sbordi */
+  position: relative; 
+  /* RIMOSSO: overflow: hidden; (Questo causava il bug del modal) */
 }
 
-/* Creiamo un faretto usando un pseudo-elemento ::before.
-  Sarà un gradiente radiale posizionato sulle variabili CSS --mouse-x e --mouse-y
-  che imposteremo con JavaScript.
-*/
 .spotlight-effect::before {
   content: "";
   position: absolute;
@@ -46,26 +38,33 @@
   top: 0;
   width: 100%;
   height: 100%;
-  z-index: 0; /* Sta sotto il contenuto */
+  z-index: 0; 
 
   background: radial-gradient(
     circle 350px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(0, 191, 255, 0.15), /* Blu Neon Primario */
-    rgba(255, 0, 255, 0.1),  /* Magenta Neon Secondario */
+    rgba(0, 191, 255, 0.15), 
+    rgba(255, 0, 255, 0.1),  
     transparent 60%
   );
   
-  opacity: 0; /* Nascosto di default */
-  transition: opacity 0.4s ease-out; /* Transizione fluida */
+  opacity: 0; 
+  transition: opacity 0.4s ease-out; 
 }
 
-/* Quando il mouse entra nella pagina, il faretto appare */
 .spotlight-effect:hover::before {
   opacity: 1;
 }
 
-/* Assicura che tutto il contenuto della pagina stia SOPRA il faretto */
 .spotlight-effect > * {
   position: relative;
   z-index: 1;
+}
+
+/* Animazione per Modal (se usata) */
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
 }
