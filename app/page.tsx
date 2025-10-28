@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import { useState, MouseEvent } from "react"; // MouseEvent è necessario per il faretto
+import { useState, MouseEvent } from "react"; 
 import Image from "next/image";
 import {
   CreditCard,
@@ -49,20 +49,17 @@ export default function LandingPage() {
     setModalState({ isOpen: true, tab: tab });
   };
 
-  // --- NUOVA FUNZIONE: GESTIONE SPOTLIGHT ---
-  // Questa funzione aggiorna le variabili CSS --mouse-x e --mouse-y
-  // È molto leggera e non causa re-render di React
+  // Funzione per lo spotlight
   const handlePageMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    // e.currentTarget è il div 'spotlight-effect'
-    // Aggiorniamo le sue proprietà CSS in tempo reale
     e.currentTarget.style.setProperty('--mouse-x', `${e.clientX}px`);
     e.currentTarget.style.setProperty('--mouse-y', `${e.clientY}px`);
   };
 
   return (
-    // AGGIUNTO: Classe 'spotlight-effect' e handler onMouseMove
+    // --- CORREZIONE QUI ---
+    // Rimosso 'overflow-x-hidden' per sbloccare il modal
     <div 
-      className="min-h-screen overflow-x-hidden spotlight-effect"
+      className="min-h-screen spotlight-effect" 
       onMouseMove={handlePageMouseMove}
     >
       
