@@ -9,6 +9,7 @@ const nextConfig = {
         port: '',
         pathname: '/**', // Autorizza qualsiasi immagine da questo host
       },
+      // Aggiungi qui altri domini se necessario
     ],
   },
 };
